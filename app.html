@@ -1,0 +1,1300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Job Tracker Pro</title>
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#4f46e5">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="/icons/icon-192.svg">
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-light: #e0e7ff;
+            --primary-dark: #3730a3;
+            --success: #059669;
+            --success-light: #d1fae5;
+            --warning: #d97706;
+            --warning-light: #fef3c7;
+            --danger: #dc2626;
+            --danger-light: #fee2e2;
+            --bg: #f1f5f9;
+            --card: #ffffff;
+            --text: #1e293b;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --radius: 12px;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        .top-nav {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .top-nav .brand { font-size: 1.2rem; font-weight: 700; }
+        .top-nav .nav-right { display: flex; align-items: center; gap: 16px; }
+        .top-nav .user-info { display: flex; align-items: center; gap: 8px; font-size: 0.9rem; }
+        .top-nav .user-avatar {
+            width: 32px; height: 32px; border-radius: 50%; background: rgba(255,255,255,0.2);
+            display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 0.85rem;
+            overflow: hidden;
+        }
+        .top-nav .user-avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .top-nav .saved-badge {
+            background: rgba(255,255,255,0.2); padding: 4px 12px; border-radius: 20px;
+            font-size: 0.8rem; cursor: pointer; transition: background 0.2s;
+        }
+        .top-nav .saved-badge:hover { background: rgba(255,255,255,0.3); }
+        .top-nav .logout-btn {
+            background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3);
+            color: white; padding: 6px 14px; border-radius: 8px; cursor: pointer;
+            font-size: 0.8rem; text-decoration: none; transition: background 0.2s;
+        }
+        .top-nav .logout-btn:hover { background: rgba(255,255,255,0.25); }
+
+        .hero {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            padding: 24px 20px 20px;
+            text-align: center;
+        }
+        .hero h1 { font-size: 1.6rem; font-weight: 700; margin-bottom: 4px; }
+        .hero p { opacity: 0.85; font-size: 0.95rem; }
+
+        .container { max-width: 900px; margin: 0 auto; padding: 20px; }
+
+        .card {
+            background: var(--card);
+            border-radius: var(--radius);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+            padding: 24px;
+            margin-bottom: 16px;
+        }
+
+        .card-title {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .card-title .icon { font-size: 1.2rem; }
+
+        /* Dropzone */
+        .dropzone {
+            border: 2px dashed var(--border);
+            border-radius: var(--radius);
+            padding: 30px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: #fafbfc;
+            position: relative;
+        }
+        .dropzone:hover, .dropzone.drag-over {
+            border-color: var(--primary);
+            background: var(--primary-light);
+        }
+        .dropzone .dz-icon { font-size: 2rem; margin-bottom: 8px; }
+        .dropzone .dz-text { color: var(--text-muted); font-size: 0.9rem; }
+        .dropzone .dz-text strong { color: var(--primary); }
+        .dropzone input[type="file"] {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            cursor: pointer;
+        }
+        .dropzone-success {
+            border-color: var(--success) !important;
+            background: var(--success-light) !important;
+        }
+        .dropzone-success .dz-text { color: var(--success); }
+
+        .privacy-note { font-size: 0.75rem; color: var(--text-muted); margin-top: 8px; text-align: center; }
+
+        .or-divider {
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            margin: 12px 0;
+            position: relative;
+        }
+        .or-divider::before, .or-divider::after {
+            content: "";
+            position: absolute;
+            top: 50%;
+            width: 40%;
+            height: 1px;
+            background: var(--border);
+        }
+        .or-divider::before { left: 0; }
+        .or-divider::after { right: 0; }
+
+        textarea, input[type="text"], input[type="number"], select {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-family: inherit;
+            transition: border-color 0.2s;
+            background: white;
+        }
+        textarea:focus, input:focus, select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(79,70,229,0.1);
+        }
+        textarea { resize: vertical; }
+
+        label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 6px;
+        }
+
+        .form-group { margin-bottom: 14px; }
+
+        /* Filters */
+        .filters-bar {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: flex-end;
+        }
+        .filters-bar .form-group { flex: 1; min-width: 120px; margin-bottom: 0; }
+        .filter-toggle-btn {
+            background: none;
+            border: none;
+            color: var(--primary);
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            padding: 4px 0;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .filter-toggle-btn .arrow { transition: transform 0.2s; display: inline-block; }
+        .filter-toggle-btn .arrow.open { transform: rotate(180deg); }
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            padding: 10px 0;
+        }
+        .checkbox-label input { width: auto; }
+
+        /* Search Button */
+        .btn-search {
+            width: 100%;
+            padding: 14px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+        }
+        .btn-search:hover { background: var(--primary-dark); }
+        .btn-search:active { transform: scale(0.99); }
+        .btn-search:disabled { opacity: 0.6; cursor: not-allowed; }
+
+        /* Profile Card */
+        .profile-card {
+            background: var(--primary-light);
+            border-left: 4px solid var(--primary);
+            border-radius: 8px;
+            padding: 16px;
+        }
+        .profile-card h4 { margin-bottom: 8px; font-size: 0.95rem; }
+        .profile-info { font-size: 0.85rem; color: var(--text-muted); line-height: 1.8; }
+        .chip-group { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+        .chip {
+            background: white;
+            border: 1px solid var(--primary);
+            color: var(--primary);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .chip:hover, .chip.active { background: var(--primary); color: white; }
+
+        /* Spinner */
+        .spinner-wrap { text-align: center; padding: 50px 20px; }
+        .spinner {
+            width: 40px; height: 40px;
+            border: 4px solid var(--border);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 12px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .spinner-text { color: var(--text-muted); font-size: 0.9rem; }
+
+        /* Results */
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .results-header h2 { font-size: 1.15rem; }
+        .results-count { font-size: 0.85rem; color: var(--text-muted); }
+
+        .job-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 20px;
+            margin-bottom: 12px;
+            transition: box-shadow 0.2s, transform 0.15s;
+        }
+        .job-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.08); transform: translateY(-1px); }
+        .job-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+        .job-title { font-size: 1.05rem; font-weight: 700; color: var(--primary-dark); margin: 0; line-height: 1.3; }
+        .fit-badge {
+            flex-shrink: 0;
+            padding: 3px 10px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+        .fit-high { background: var(--success-light); color: #065f46; }
+        .fit-medium { background: var(--warning-light); color: #92400e; }
+        .fit-low { background: var(--danger-light); color: #991b1b; }
+
+        .fit-bar-wrap { margin-top: 6px; display: flex; align-items: center; gap: 8px; }
+        .fit-bar { height: 6px; border-radius: 3px; background: var(--border); flex: 1; max-width: 120px; overflow: hidden; }
+        .fit-bar-fill { height: 100%; border-radius: 3px; transition: width 0.4s ease; }
+        .fit-bar-fill.high { background: var(--success); }
+        .fit-bar-fill.medium { background: var(--warning); }
+        .fit-bar-fill.low { background: var(--danger); }
+
+        .job-meta { font-size: 0.8rem; color: var(--text-muted); margin: 8px 0; display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
+        .job-meta span { display: flex; align-items: center; gap: 3px; }
+        .meta-dot { color: var(--border); }
+
+        .job-desc { font-size: 0.88rem; color: #475569; margin: 10px 0; line-height: 1.5; }
+
+        .skill-chips { display: flex; flex-wrap: wrap; gap: 5px; margin: 10px 0; }
+        .skill-chip {
+            background: var(--primary-light);
+            color: var(--primary-dark);
+            font-size: 0.72rem;
+            font-weight: 600;
+            padding: 2px 9px;
+            border-radius: 12px;
+        }
+
+        .job-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; flex-wrap: wrap; gap: 8px; }
+        .job-links { display: flex; gap: 8px; align-items: center; }
+
+        .btn-apply {
+            background: var(--success);
+            color: white;
+            padding: 8px 18px;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 0.85rem;
+            transition: background 0.15s;
+        }
+        .btn-apply:hover { background: #047857; }
+
+        .btn-save {
+            background: none;
+            border: 1px solid var(--border);
+            padding: 7px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            transition: all 0.15s;
+        }
+        .btn-save:hover { border-color: var(--primary); color: var(--primary); }
+        .btn-save.saved { border-color: var(--warning); color: var(--warning); background: var(--warning-light); }
+
+        .why-link {
+            font-size: 0.78rem;
+            color: var(--primary);
+            cursor: pointer;
+            font-weight: 500;
+        }
+        .why-link:hover { text-decoration: underline; }
+
+        /* Saved Jobs */
+        .saved-job {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border);
+            gap: 12px;
+        }
+        .saved-job:last-child { border-bottom: none; }
+        .saved-info h4 { font-size: 0.9rem; margin-bottom: 2px; color: var(--primary-dark); }
+        .saved-info p { font-size: 0.8rem; color: var(--text-muted); margin: 0; }
+        .saved-actions { display: flex; gap: 6px; flex-shrink: 0; }
+        .btn-sm {
+            padding: 5px 12px;
+            border-radius: 5px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .btn-sm-apply { background: var(--success); color: white; }
+        .btn-sm-remove { background: var(--danger-light); color: var(--danger); }
+        .btn-sm-remove:hover { background: var(--danger); color: white; }
+
+        .empty-state { text-align: center; padding: 30px 20px; color: var(--text-muted); }
+        .empty-state .empty-icon { font-size: 2.5rem; margin-bottom: 10px; }
+        .empty-state p { font-size: 0.9rem; }
+
+        .not-fit-section { margin-top: 30px; padding-top: 20px; border-top: 2px dashed var(--border); }
+        .not-fit-section h3 { font-size: 1rem; color: var(--text-muted); margin-bottom: 12px; }
+
+        /* Modal */
+        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 1000; align-items: center; justify-content: center; }
+        .modal-overlay.open { display: flex; }
+        .modal-box {
+            background: white;
+            border-radius: var(--radius);
+            padding: 28px;
+            width: 90%;
+            max-width: 560px;
+            max-height: 85vh;
+            overflow-y: auto;
+            position: relative;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+        }
+        .modal-close { position: absolute; top: 14px; right: 18px; font-size: 1.4rem; cursor: pointer; color: var(--text-muted); background: none; border: none; }
+        .modal-section { margin-bottom: 20px; }
+        .modal-section h4 { font-size: 0.95rem; font-weight: 700; margin-bottom: 8px; }
+        .modal-section p { font-size: 0.88rem; color: #475569; line-height: 1.5; }
+        .bridge-item {
+            padding: 10px 14px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            font-size: 0.85rem;
+            line-height: 1.4;
+        }
+        .bridge-gap { background: var(--danger-light); border-left: 3px solid var(--danger); }
+        .bridge-ok { background: var(--success-light); border-left: 3px solid var(--success); }
+
+        .hidden { display: none !important; }
+
+        @media (max-width: 640px) {
+            .hero h1 { font-size: 1.5rem; }
+            .filters-bar { flex-direction: column; }
+            .filters-bar .form-group { min-width: 100%; }
+            .job-header { flex-direction: column; }
+            .saved-job { flex-direction: column; align-items: flex-start; }
+        }
+    </style>
+</head>
+<body>
+
+<nav class="top-nav" id="topNav" style="display:none;">
+    <div class="brand">Job Tracker Pro</div>
+    <div class="nav-right">
+        <span class="saved-badge" onclick="document.getElementById('savedJobsCard').scrollIntoView({behavior:'smooth'});" id="savedBadge">Saved: 0</span>
+        <div class="user-info">
+            <div class="user-avatar" id="userAvatar"></div>
+            <span id="userName"></span>
+        </div>
+        <a href="/api/logout" class="logout-btn">Log out</a>
+    </div>
+</nav>
+
+<div class="hero">
+    <h1 id="heroTitle">Job Tracker Pro</h1>
+    <p>Upload your resume, describe what you want, or search by keyword</p>
+</div>
+
+<div class="container">
+
+    <!-- Saved Jobs -->
+    <div id="savedSection" class="card hidden">
+        <div class="card-title"><span class="icon">&#9733;</span> Saved Jobs</div>
+        <div id="savedList"></div>
+    </div>
+
+    <!-- Resume Upload -->
+    <div class="card">
+        <div class="card-title"><span class="icon">&#128196;</span> Resume (optional)</div>
+        <div class="dropzone" id="dropzone">
+            <input type="file" id="resumeFile" accept=".pdf,.docx">
+            <div class="dz-icon">&#128194;</div>
+            <div class="dz-text"><strong>Click to upload</strong> or drag and drop<br>PDF or DOCX</div>
+        </div>
+        <div class="privacy-note">We never store your resume. It's only used locally for matching.</div>
+        <div class="or-divider">or paste text</div>
+        <textarea id="resumeText" rows="3" placeholder="Paste your resume content here..."></textarea>
+    </div>
+
+    <!-- Profile Detection -->
+    <div id="profileCard" class="card hidden">
+        <div class="profile-card">
+            <h4>We detected your profile</h4>
+            <div id="profileInfo" class="profile-info"></div>
+            <div class="chip-group" id="roleChips"></div>
+        </div>
+    </div>
+
+    <!-- What are you looking for -->
+    <div class="card">
+        <div class="card-title"><span class="icon">&#128161;</span> What are you looking for? (optional)</div>
+        <textarea id="lookingFor" rows="2" placeholder="e.g. program manager, fintech, SQL, remote, operations"></textarea>
+    </div>
+
+    <!-- Job Keywords -->
+    <div class="card">
+        <div class="card-title"><span class="icon">&#128269;</span> Job Keywords (optional)</div>
+        <input type="text" id="keywordInput" placeholder="e.g. Software Engineer, Marketing Manager">
+    </div>
+
+    <!-- Filters -->
+    <div class="card">
+        <button class="filter-toggle-btn" onclick="toggleFilters()">
+            <span class="arrow" id="filterArrow">&#9660;</span> Filters
+        </button>
+        <div id="filtersContent" class="hidden" style="margin-top:14px;">
+            <div class="filters-bar">
+                <div class="form-group">
+                    <label>Country</label>
+                    <select id="country">
+                        <option value="us">USA</option>
+                        <option value="in">India</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Location</label>
+                    <input type="text" id="locationInput" placeholder="Start typing a city..." list="locationList" autocomplete="off">
+                    <datalist id="locationList"></datalist>
+                </div>
+                <div class="form-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="remoteToggle"> Remote only
+                    </label>
+                </div>
+                <div class="form-group" id="salaryGroup">
+                    <label>Min Salary (USD)</label>
+                    <input type="number" id="minSalary" placeholder="e.g. 80000">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search Button -->
+    <button class="btn-search" id="searchBtn">Find Jobs</button>
+
+    <!-- Validation -->
+    <div id="errorArea" style="margin-top:12px;"></div>
+
+    <!-- Loading -->
+    <div id="loading" class="spinner-wrap hidden">
+        <div class="spinner"></div>
+        <div class="spinner-text">Finding the best matches for you...</div>
+    </div>
+
+    <!-- Results -->
+    <div id="resultsArea" class="hidden" style="margin-top:20px;">
+        <div class="results-header">
+            <h2>Results</h2>
+            <span class="results-count" id="resultsCount"></span>
+        </div>
+        <div id="results"></div>
+        <div id="notFitSection" class="not-fit-section hidden">
+            <h3>Probably not a fit</h3>
+            <div id="notFitResults"></div>
+        </div>
+    </div>
+
+    <!-- Empty State -->
+    <div id="emptyState" class="card hidden">
+        <div class="empty-state">
+            <div class="empty-icon">&#128586;</div>
+            <p><strong>No jobs found.</strong><br>Try broader keywords, a different location, or remove some filters.</p>
+        </div>
+    </div>
+
+</div>
+
+<!-- Why Modal -->
+<div class="modal-overlay" id="whyModal">
+    <div class="modal-box">
+        <button class="modal-close" onclick="closeModal()">&#10005;</button>
+        <div id="modalBody"></div>
+    </div>
+</div>
+
+<script>
+    const $ = id => document.getElementById(id);
+    let userProfile = null;
+    let selectedRole = '';
+    let savedJobs = [];
+    let currentUser = null;
+
+    // --- Auth Guard ---
+    async function checkAuth() {
+        try {
+            const res = await fetch('/api/me', { credentials: 'include' });
+            if (res.status === 401) {
+                window.location.href = '/api/login';
+                return;
+            }
+            currentUser = await res.json();
+            $('topNav').style.display = 'flex';
+            const name = [currentUser.first_name, currentUser.last_name].filter(Boolean).join(' ') || currentUser.email || 'User';
+            $('userName').textContent = name;
+            $('heroTitle').textContent = `Welcome back, ${currentUser.first_name || 'there'}!`;
+            if (currentUser.profile_image_url) {
+                $('userAvatar').innerHTML = `<img src="${esc(currentUser.profile_image_url)}" alt="avatar">`;
+            } else {
+                $('userAvatar').textContent = (currentUser.first_name || 'U')[0].toUpperCase();
+            }
+            await loadSavedJobs();
+            await loadProfile();
+        } catch (e) {
+            console.error('Auth check failed:', e);
+            window.location.href = '/api/login';
+        }
+    }
+
+    // --- Saved Jobs (Database) ---
+    async function loadSavedJobs() {
+        try {
+            const res = await fetch('/api/saved-jobs', { credentials: 'include' });
+            if (res.ok) savedJobs = await res.json();
+            renderSavedJobs();
+            updateSavedBadge();
+        } catch (e) { console.error('Failed to load saved jobs:', e); }
+    }
+
+    function updateSavedBadge() {
+        $('savedBadge').textContent = `Saved: ${savedJobs.length}`;
+    }
+
+    function renderSavedJobs() {
+        if (savedJobs.length === 0) { $('savedSection').classList.add('hidden'); return; }
+        $('savedSection').classList.remove('hidden');
+        $('savedList').innerHTML = savedJobs.map(j => `
+            <div class="saved-job">
+                <div class="saved-info">
+                    <h4>${esc(j.title)}</h4>
+                    <p>${esc(j.company || '')} &bull; ${esc(j.location || '')} &bull; ${timeAgo(j.saved_at || j.date)}</p>
+                </div>
+                <div class="saved-actions">
+                    <a href="${esc(j.url || j.redirect_url || '')}" target="_blank" rel="noopener noreferrer" class="btn-sm btn-sm-apply">Apply</a>
+                    <button class="btn-sm btn-sm-remove" onclick="removeSaved(${j.id})">Remove</button>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    window.removeSaved = async (id) => {
+        try {
+            await fetch(`/api/saved-jobs/${id}`, { method: 'DELETE', credentials: 'include' });
+            savedJobs = savedJobs.filter(j => j.id !== id);
+            renderSavedJobs();
+            updateSavedBadge();
+        } catch (e) { console.error('Failed to remove saved job:', e); }
+    };
+
+    async function saveJob(job) {
+        if (savedJobs.some(j => j.job_id === String(job.id))) return;
+        try {
+            const res = await fetch('/api/saved-jobs', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({
+                    job_id: String(job.id),
+                    title: job.title,
+                    company: job.company,
+                    location: job.location,
+                    url: job.redirect_url,
+                    salary: job.salary_min ? String(job.salary_min) : null,
+                    description: (job.description || '').substring(0, 500),
+                    fit_score: job.fit10 || 0
+                })
+            });
+            if (res.ok) {
+                const saved = await res.json();
+                savedJobs.push(saved);
+                renderSavedJobs();
+                updateSavedBadge();
+            }
+        } catch (e) { console.error('Failed to save job:', e); }
+    }
+
+    // --- Profile Persistence ---
+    async function loadProfile() {
+        try {
+            const res = await fetch('/api/profile', { credentials: 'include' });
+            if (res.ok) {
+                const profile = await res.json();
+                if (profile && profile.resume_text) {
+                    $('resumeText').value = profile.resume_text;
+                    extractProfile(profile.resume_text);
+                }
+            }
+        } catch (e) { console.error('Failed to load profile:', e); }
+    }
+
+    async function saveProfile() {
+        if (!userProfile) return;
+        try {
+            await fetch('/api/profile', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({
+                    resume_text: userProfile.rawText || '',
+                    detected_role: userProfile.recentTitle || '',
+                    detected_skills: (userProfile.topSkills || []).join(', '),
+                    seniority: userProfile.seniority || '',
+                    years_exp: userProfile.yearsGuess || 0
+                })
+            });
+        } catch (e) { console.error('Failed to save profile:', e); }
+    }
+
+    // --- Helpers ---
+    function esc(s) { const d = document.createElement('div'); d.textContent = s || ''; return d.innerHTML; }
+
+    function timeAgo(dateStr) {
+        const diff = Date.now() - new Date(dateStr).getTime();
+        const mins = Math.floor(diff / 60000);
+        if (mins < 60) return mins <= 1 ? 'Just now' : mins + 'm ago';
+        const hrs = Math.floor(mins / 60);
+        if (hrs < 24) return hrs + 'h ago';
+        const days = Math.floor(hrs / 24);
+        if (days < 30) return days + 'd ago';
+        return Math.floor(days / 30) + 'mo ago';
+    }
+
+    function stripHtml(s) { return (s || '').replace(/<[^>]*>/g, ''); }
+
+    // --- Dropzone ---
+    const dz = $('dropzone');
+    dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('drag-over'); });
+    dz.addEventListener('dragleave', () => dz.classList.remove('drag-over'));
+    dz.addEventListener('drop', e => {
+        e.preventDefault();
+        dz.classList.remove('drag-over');
+        if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
+    });
+    $('resumeFile').addEventListener('change', e => { if (e.target.files[0]) handleFile(e.target.files[0]); });
+
+    async function handleFile(file) {
+        const formData = new FormData();
+        formData.append('resume', file);
+        dz.querySelector('.dz-text').innerHTML = 'Parsing...';
+        try {
+            const res = await fetch('/api/parse-resume', { method: 'POST', body: formData });
+            const data = await res.json();
+            if (data.error) throw new Error(data.error);
+            $('resumeText').value = data.text;
+            dz.classList.add('dropzone-success');
+            dz.querySelector('.dz-icon').textContent = '\u2714';
+            dz.querySelector('.dz-text').innerHTML = `<strong>${esc(file.name)}</strong> parsed successfully`;
+            if (data.warning) alert(data.warning);
+            extractProfile(data.text);
+        } catch (err) {
+            dz.querySelector('.dz-text').innerHTML = '<strong style="color:var(--danger)">Failed to parse.</strong> Try pasting text instead.';
+        }
+    }
+
+    $('resumeText').addEventListener('input', e => {
+        if (e.target.value.trim().length >= 200) extractProfile(e.target.value);
+    });
+
+    // --- Profile ---
+    function extractProfile(text) {
+        if (text.length < 200) return;
+        const lower = text.toLowerCase();
+        const skills = [
+            'Go to Market','Six Sigma','Power BI','Machine Learning','Data Analysis',
+            'Product Management','Project Management','Program Management','Change Management',
+            'Stakeholder Management','Risk Management','Vendor Management','Process Improvement',
+            'Cost Optimization','Business Intelligence','Supply Chain','Executive Communication',
+            'Cross-Functional','REST API','Node.js','C++','C#',
+            'React','Python','Java','JavaScript','AWS','SQL','Agile','Scrum',
+            'Sales','Marketing','Docker','Kubernetes','Golang','TypeScript','Azure','GCP','Excel',
+            'Tableau','Operations','Leadership','Strategy','Budgeting','Compliance',
+            'OKR','KPI','Data-Driven','Forecasting','Automation','Analytics','QuickSight',
+            'Roadmap','UAT','DMAIC','Lean',
+            'Jira','Figma','Git','MongoDB','PostgreSQL','Redis','Terraform','Jenkins',
+            'GraphQL','Angular','Vue','Ruby','Swift','Rust'];
+        function skillRegex(s) {
+            const esc = s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            if (/[^a-zA-Z0-9\s]$/.test(s) || /^[^a-zA-Z0-9\s]/.test(s)) {
+                return new RegExp('(?:^|\\s|[^a-zA-Z0-9])' + esc + '(?:$|\\s|[^a-zA-Z0-9])', 'i');
+            }
+            return new RegExp('\\b' + esc + '\\b', 'i');
+        }
+        const foundSkills = skills.filter(s => skillRegex(s).test(text));
+
+        const roles = [
+            'Senior Program Manager','Technical Program Manager','Program Manager',
+            'Senior Product Manager','Product Manager','Senior Project Manager','Project Manager',
+            'Software Engineer','Senior Software Engineer','Data Scientist','Data Analyst',
+            'Business Analyst','Engineering Manager','Operations Manager','Marketing Manager',
+            'Scrum Master','Solutions Architect','Cloud Engineer','Sales Manager','HR Manager',
+            'Accountant','DevOps Engineer','Supply Chain Manager','Senior Supply Chain Manager',
+            'Full Stack Developer','Frontend Developer','Backend Developer',
+            'UX Designer','UI Designer','Financial Analyst','Security Engineer',
+            'Machine Learning Engineer','Data Engineer','Site Reliability Engineer',
+            'Sourcing Analyst','Strategic Sourcing','Supply Chain Coordinator'];
+        const suggestedRoles = roles.filter(r => lower.includes(r.toLowerCase()));
+
+        const yearsMatch = text.match(/(\d+)\+?\s*years?/gi);
+        let maxYears = 0;
+        if (yearsMatch) yearsMatch.forEach(m => { const n = parseInt(m); if (n > maxYears && n < 50) maxYears = n; });
+
+        const degrees = [];
+        if (/ph\.?d/i.test(text)) degrees.push('PhD');
+        if (/mba/i.test(text)) degrees.push('MBA');
+        if (/master/i.test(text)) degrees.push('Master');
+        if (/bachelor/i.test(text)) degrees.push('Bachelor');
+
+        let seniority = 'Mid';
+        if (/\b(director|vp|vice president)\b/i.test(text)) seniority = 'Director';
+        else if (/\b(principal|staff)\b/i.test(text)) seniority = 'Principal';
+        else if (/\b(senior|sr\.?)\b/i.test(text)) seniority = 'Senior';
+        else if (/\b(lead)\b/i.test(text)) seniority = 'Lead';
+        else if (/\b(junior|jr\.?|entry)\b/i.test(text)) seniority = 'Entry';
+
+        userProfile = {
+            recentTitle: suggestedRoles[0] || 'Professional',
+            suggestedRoles: suggestedRoles.slice(0, 5),
+            topSkills: foundSkills,
+            seniority,
+            yearsGuess: maxYears || 5,
+            degrees,
+            rawText: text
+        };
+        renderProfile();
+        saveProfile();
+    }
+
+    function renderProfile() {
+        $('profileCard').classList.remove('hidden');
+        $('profileInfo').innerHTML =
+            `<strong>Title:</strong> ${esc(userProfile.recentTitle)} &bull;
+             <strong>Seniority:</strong> ${userProfile.seniority} &bull;
+             <strong>~${userProfile.yearsGuess} years</strong><br>
+             <strong>Skills:</strong> ${userProfile.topSkills.slice(0, 10).join(', ')}
+             ${userProfile.degrees.length ? '<br><strong>Education:</strong> ' + userProfile.degrees.join(', ') : ''}`;
+
+        const chips = $('roleChips');
+        chips.innerHTML = '';
+        userProfile.suggestedRoles.forEach(role => {
+            const c = document.createElement('div');
+            c.className = 'chip' + (selectedRole === role ? ' active' : '');
+            c.textContent = role;
+            c.onclick = () => { selectedRole = role; renderProfile(); };
+            chips.appendChild(c);
+        });
+    }
+
+    function extractKeyTerms(text) {
+        if (text.length <= 80) return text;
+        const knownRoles = [
+            'senior program manager','technical program manager','program manager',
+            'senior product manager','product manager','senior project manager','project manager',
+            'software engineer','senior software engineer','data scientist','data analyst',
+            'business analyst','engineering manager','operations manager','marketing manager',
+            'scrum master','solutions architect','cloud engineer','sales manager','hr manager',
+            'accountant','devops engineer','full stack developer','frontend developer',
+            'backend developer','supply chain manager','senior supply chain manager',
+            'ux designer','ui designer','financial analyst','security engineer',
+            'machine learning engineer','data engineer','site reliability engineer'];
+        const lower = text.toLowerCase();
+        const foundRole = knownRoles.find(r => lower.includes(r));
+        if (foundRole) return foundRole;
+        const words = text.match(/\b[A-Za-z]{4,}\b/g) || [];
+        const stopWords = new Set(['that','this','with','from','have','been','will','would','could',
+            'should','their','there','about','which','when','were','what','your','them','than',
+            'also','into','more','some','very','just','other','over','such','only','each',
+            'through','across','based','using','between','after','before','within','during']);
+        const meaningful = [...new Set(words.filter(w => !stopWords.has(w.toLowerCase())))];
+        return meaningful.slice(0, 3).join(' ');
+    }
+
+    // --- Filters ---
+    const locationData = {
+        us: ['New York, NY','Los Angeles, CA','Chicago, IL','San Francisco, CA','Seattle, WA',
+            'Austin, TX','Boston, MA','Denver, CO','Atlanta, GA','Dallas, TX','Houston, TX',
+            'Miami, FL','Phoenix, AZ','San Diego, CA','Portland, OR','Washington, DC',
+            'Philadelphia, PA','San Jose, CA','Minneapolis, MN','Detroit, MI','Nashville, TN',
+            'Charlotte, NC','Raleigh, NC','Salt Lake City, UT','Pittsburgh, PA','Columbus, OH',
+            'Indianapolis, IN','Kansas City, MO','Tampa, FL','Orlando, FL'],
+        in: ['Bangalore','Mumbai','Delhi','Hyderabad','Pune','Chennai','Kolkata','Noida',
+            'Gurgaon','Ahmedabad','Jaipur','Chandigarh','Indore','Coimbatore','Kochi',
+            'Thiruvananthapuram','Lucknow','Nagpur','Visakhapatnam','Bhubaneswar']
+    };
+
+    function updateLocationList() {
+        const country = $('country').value;
+        const dl = $('locationList');
+        dl.innerHTML = locationData[country].map(c => `<option value="${c}">`).join('');
+    }
+
+    window.toggleFilters = () => {
+        $('filtersContent').classList.toggle('hidden');
+        $('filterArrow').classList.toggle('open');
+    };
+    $('country').onchange = e => {
+        $('salaryGroup').style.display = e.target.value === 'us' ? 'block' : 'none';
+        updateLocationList();
+        $('locationInput').value = '';
+    };
+    updateLocationList();
+
+    // --- Search ---
+    $('searchBtn').onclick = performSearch;
+    [$('keywordInput'), $('locationInput')].forEach(el => {
+        el.addEventListener('keydown', e => { if (e.key === 'Enter') performSearch(); });
+    });
+
+    async function performSearch() {
+        $('errorArea').innerHTML = '';
+        const resumeVal = $('resumeText').value.trim();
+        const lookingVal = $('lookingFor').value.trim();
+        const keywordVal = $('keywordInput').value.trim();
+
+        if (resumeVal && !userProfile) extractProfile(resumeVal);
+        if (lookingVal && lookingVal.length > 200 && !userProfile) extractProfile(lookingVal);
+
+        let queryWhat = '';
+        if (keywordVal) {
+            queryWhat = keywordVal;
+        } else if (selectedRole || (userProfile && userProfile.recentTitle !== 'Professional')) {
+            queryWhat = selectedRole || userProfile.recentTitle;
+        } else if (lookingVal) {
+            queryWhat = extractKeyTerms(lookingVal);
+        } else if (resumeVal) {
+            queryWhat = extractKeyTerms(resumeVal);
+        }
+
+        if (!queryWhat.trim()) {
+            queryWhat = 'jobs';
+        }
+
+        queryWhat = queryWhat.substring(0, 100);
+
+        $('searchBtn').disabled = true;
+        $('loading').classList.remove('hidden');
+        $('resultsArea').classList.add('hidden');
+        $('emptyState').classList.add('hidden');
+        $('results').innerHTML = '';
+        $('notFitResults').innerHTML = '';
+        $('notFitSection').classList.add('hidden');
+
+        try {
+            const params = new URLSearchParams({
+                country: $('country').value,
+                what: queryWhat,
+                where: $('locationInput').value,
+                remote: $('remoteToggle').checked,
+                max_salary: $('minSalary').value
+            });
+            const res = await fetch(`/api/jobs?${params.toString()}`);
+            let jobs = await res.json();
+            if (!res.ok) throw new Error(jobs.error || 'Failed to fetch');
+
+            const personalizationText = (resumeVal + ' ' + lookingVal).trim();
+            if (personalizationText) {
+                jobs = rankJobs(jobs, personalizationText);
+            }
+            renderJobs(jobs, !!personalizationText);
+        } catch (err) {
+            $('errorArea').innerHTML = '<div style="color:var(--danger);background:var(--danger-light);padding:10px;border-radius:8px;font-size:0.9rem;">Failed to fetch jobs. Please try again.</div>';
+        } finally {
+            $('loading').classList.add('hidden');
+            $('searchBtn').disabled = false;
+        }
+    }
+
+    // --- Scoring ---
+    function extractJobRequirements(job) {
+        const text = (job.title + ' ' + job.description).toLowerCase();
+        const yearsMatches = text.match(/(\d+)\+?\s*years?/gi) || [];
+        let yearsMin = 0;
+        yearsMatches.forEach(m => { const n = parseInt(m); if (n > yearsMin && n < 30) yearsMin = n; });
+
+        const degrees = [];
+        if (/ph\.?d/i.test(text)) degrees.push('phd');
+        if (/mba/i.test(text)) degrees.push('mba');
+        if (/master/i.test(text)) degrees.push('master');
+        if (/bachelor/i.test(text)) degrees.push('bachelor');
+
+        const mustHaveSkills = [];
+        const sentences = job.description.split(/[.!?;]/);
+        const mustPatterns = [/must have/i, /required/i, /minimum/i, /experience with/i, /proficien/i];
+        const allSkills = ['React','Node','Python','AWS','SQL','Docker','Java','Kubernetes','TypeScript',
+            'JavaScript','Azure','GCP','Go','C\\+\\+','C#','Agile','Scrum','Excel','Tableau','Power BI'];
+        sentences.forEach(s => {
+            if (mustPatterns.some(p => p.test(s))) {
+                allSkills.forEach(sk => { if (new RegExp(sk, 'i').test(s) && !mustHaveSkills.includes(sk)) mustHaveSkills.push(sk); });
+            }
+        });
+
+        return { yearsMin, degrees, mustHaveSkills };
+    }
+
+    function rankJobs(jobs, pText) {
+        const targetRole = (selectedRole || userProfile?.recentTitle || '').toLowerCase();
+        const pSkills = (userProfile?.topSkills || []).map(s => s.toLowerCase());
+        const pLower = pText.toLowerCase();
+        function escRx(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+        function wordMatch(text, term) {
+            const esc = escRx(term);
+            if (/[^a-zA-Z0-9\s]$/.test(term) || /^[^a-zA-Z0-9\s]/.test(term)) {
+                return new RegExp('(?:^|\\s|[^a-zA-Z0-9])' + esc + '(?:$|\\s|[^a-zA-Z0-9])', 'i').test(text);
+            }
+            return new RegExp('\\b' + esc + '\\b', 'i').test(text);
+        }
+        const stopWords = new Set(['the','and','for','with','has','have','had','that','this','are','was','were','from',
+            'been','will','would','could','should','their','there','about','which','when','what','your','them','than',
+            'also','into','more','some','very','just','other','over','such','only','each','through','across','based',
+            'using','between','after','before','within','during','where','while','then','both','most','does','did',
+            'not','but','can','all','may','our','new','one','two','well','per','use','able','ensure','including',
+            'related','strong','work','team','role','join','company','position','looking','experience','required',
+            'preferred','must','years','ability','skills','knowledge','understanding','working','responsible']);
+        const pWords = new Set((pLower.match(/\w{4,}/g) || []).filter(w => !stopWords.has(w)));
+
+        return jobs.map(job => {
+            const reqs = extractJobRequirements(job);
+            const title = job.title.toLowerCase();
+            const desc = job.description.toLowerCase();
+            const fullText = title + ' ' + desc;
+
+            let titleScore = 0;
+            const roleParts = targetRole.split(/\s+/).filter(w => w.length > 2);
+            const titlePartMatches = roleParts.filter(p => wordMatch(title, p)).length;
+            if (titlePartMatches === roleParts.length && roleParts.length > 0) titleScore = 35;
+            else if (titlePartMatches >= Math.ceil(roleParts.length / 2) && roleParts.length > 0) titleScore = 25;
+            else if (roleParts.some(p => wordMatch(title, p))) titleScore = 12;
+
+            let matchedSkills = [];
+            pSkills.forEach(skill => { if (wordMatch(fullText, skill)) matchedSkills.push(skill); });
+            let contextMatches = [];
+            pWords.forEach(w => { if (w.length >= 4 && wordMatch(fullText, w) && !matchedSkills.includes(w)) contextMatches.push(w); });
+            let skillScore = Math.min(35, ((matchedSkills.length * 5) + (Math.min(contextMatches.length, 8) * 1.5)));
+
+            let reqScore = 20;
+            let hardFail = null;
+            const yearsDiff = reqs.yearsMin - (userProfile?.yearsGuess || 5);
+            if (yearsDiff >= 3) { reqScore -= 15; hardFail = `Requires ${reqs.yearsMin}+ years (you have ~${userProfile?.yearsGuess || 5})`; }
+            else if (yearsDiff > 0) reqScore -= yearsDiff * 3;
+
+            if (reqs.degrees.includes('phd') && !(userProfile?.degrees || []).some(d => d.toLowerCase() === 'phd')) {
+                reqScore -= 12; hardFail = 'PhD required';
+            }
+            const missingMustHaves = reqs.mustHaveSkills.filter(s => !pSkills.includes(s.toLowerCase()));
+            reqScore -= missingMustHaves.length * 4;
+            if (reqs.mustHaveSkills.length >= 3 && missingMustHaves.length === reqs.mustHaveSkills.length) {
+                hardFail = 'Missing all core required skills';
+            }
+
+            const seniority = (userProfile?.seniority || '').toLowerCase();
+            let seniorityScore = 0;
+            if (seniority && title.includes(seniority.toLowerCase())) seniorityScore = 5;
+            else if (seniority === 'senior' && (title.includes('sr') || title.includes('senior'))) seniorityScore = 5;
+
+            const internal = titleScore + skillScore + Math.max(0, reqScore) + seniorityScore;
+            const fit10 = Math.round(Math.min(10, Math.max(0, internal / 10)));
+
+            return {
+                ...job,
+                fit10,
+                hardFail,
+                matchedSkills,
+                scoreDetails: { titleScore, skillScore: Math.round(skillScore), reqScore: Math.max(0, reqScore), seniorityScore, matchedSkills, missingMustHaves, reqs, contextMatches: contextMatches.slice(0, 8) }
+            };
+        }).sort((a, b) => b.fit10 - a.fit10);
+    }
+
+    // --- Render Jobs ---
+    function renderJobs(jobs, hasPersonalization) {
+        const seen = new Set();
+        const deduped = jobs.filter(job => {
+            const key = `${job.title.toLowerCase().trim()}|${job.company.toLowerCase().trim()}|${job.location.toLowerCase().trim()}`;
+            if (seen.has(key)) return false;
+            seen.add(key);
+            return true;
+        });
+
+        const goodJobs = deduped.filter(j => !j.hardFail);
+        const badJobs = deduped.filter(j => j.hardFail);
+        const displayJobs = goodJobs.slice(0, 20);
+
+        if (displayJobs.length === 0 && badJobs.length === 0) {
+            $('emptyState').classList.remove('hidden');
+            return;
+        }
+
+        if (displayJobs.length === 0 && badJobs.length > 0) {
+            $('resultsArea').classList.remove('hidden');
+            $('resultsCount').textContent = `0 matching jobs (${badJobs.length} probably not a fit)`;
+        }
+
+        $('resultsArea').classList.remove('hidden');
+        $('resultsCount').textContent = `${displayJobs.length} job${displayJobs.length !== 1 ? 's' : ''}`;
+
+        const container = $('results');
+        displayJobs.forEach((job, i) => {
+            container.appendChild(createJobCard(job, hasPersonalization, i));
+        });
+
+        if (badJobs.length > 0 && hasPersonalization) {
+            $('notFitSection').classList.remove('hidden');
+            const nfContainer = $('notFitResults');
+            badJobs.slice(0, 5).forEach((job, i) => {
+                const card = createJobCard(job, hasPersonalization, displayJobs.length + i);
+                nfContainer.appendChild(card);
+            });
+        }
+    }
+
+    function createJobCard(job, hasPersonalization, idx) {
+        const div = document.createElement('div');
+        div.className = 'job-card';
+
+        const isSaved = savedJobs.some(j => String(j.id) === String(job.id));
+        let fitHtml = '';
+        let barHtml = '';
+        let skillChipsHtml = '';
+        let whyHtml = '';
+
+        if (hasPersonalization && job.fit10 !== undefined) {
+            const level = job.fit10 >= 7 ? 'high' : (job.fit10 >= 4 ? 'medium' : 'low');
+            fitHtml = `<span class="fit-badge fit-${level}">${job.fit10}/10</span>`;
+            barHtml = `<div class="fit-bar-wrap">
+                <div class="fit-bar"><div class="fit-bar-fill ${level}" style="width:${job.fit10 * 10}%"></div></div>
+            </div>`;
+            if (job.matchedSkills && job.matchedSkills.length > 0) {
+                skillChipsHtml = `<div class="skill-chips">${job.matchedSkills.slice(0, 6).map(s => `<span class="skill-chip">${esc(s)}</span>`).join('')}</div>`;
+            }
+            whyHtml = `<span class="why-link" data-job-idx="${idx}">Why this score?</span>`;
+        }
+
+        const descText = stripHtml(job.description);
+
+        div.innerHTML = `
+            <div class="job-header">
+                <h3 class="job-title">${esc(job.title)}</h3>
+                ${fitHtml}
+            </div>
+            ${barHtml}
+            <div class="job-meta">
+                <span>${esc(job.company)}</span>
+                <span class="meta-dot">&bull;</span>
+                <span>${esc(job.location)}</span>
+                <span class="meta-dot">&bull;</span>
+                <span>${timeAgo(job.date)}</span>
+            </div>
+            <div class="job-desc">${esc(descText.substring(0, 180))}${descText.length > 180 ? '...' : ''}</div>
+            ${skillChipsHtml}
+            ${job.hardFail ? '<div style="font-size:0.8rem;color:var(--danger);margin-bottom:8px;">&#9888; ' + esc(job.hardFail) + '</div>' : ''}
+            <div class="job-footer">
+                <div class="job-links">
+                    <a href="${esc(job.redirect_url)}" target="_blank" rel="noopener noreferrer" class="btn-apply">Apply</a>
+                    <button class="btn-save ${isSaved ? 'saved' : ''}" data-job-idx="${idx}">${isSaved ? '&#9733; Saved' : '&#9734; Save'}</button>
+                </div>
+                ${whyHtml}
+            </div>
+        `;
+
+        div.querySelector('.btn-save').onclick = () => {
+            saveJob(job);
+            div.querySelector('.btn-save').classList.add('saved');
+            div.querySelector('.btn-save').innerHTML = '&#9733; Saved';
+        };
+
+        const whyEl = div.querySelector('.why-link');
+        if (whyEl) whyEl.onclick = () => showWhy(job);
+
+        return div;
+    }
+
+    // --- Modal ---
+    const bulletExamples = {
+        'sql': 'Built SQL dashboards tracking KPIs across 3 product lines, reducing manual reporting time by 40%',
+        'python': 'Developed Python automation scripts that streamlined data pipelines, saving 15 hours/week of manual processing',
+        'agile': 'Facilitated Agile ceremonies (sprint planning, retros, standups) for a 12-person engineering team, improving sprint velocity by 25%',
+        'scrum': 'Served as Scrum Master for 2 cross-functional squads, reducing cycle time from 3 weeks to 10 days',
+        'stakeholder management': 'Managed stakeholder expectations across 5 departments during a $2M program rollout, achieving 100% on-time delivery',
+        'project management': 'Led end-to-end project management for 8 concurrent initiatives with combined budget of $4.5M, delivering all on time and under budget',
+        'program management': 'Owned program management for a cross-functional initiative spanning 4 teams and 3 time zones, driving alignment through weekly executive reviews',
+        'product management': 'Defined product roadmap and prioritized backlog for a B2B SaaS platform, growing active users by 35% in 6 months',
+        'data analysis': 'Conducted data analysis on customer churn patterns, identifying 3 key drivers and recommending retention strategies that reduced churn by 18%',
+        'leadership': 'Led a team of 8 direct reports through an org restructure, maintaining 95% retention and hitting all quarterly targets',
+        'aws': 'Architected cloud infrastructure on AWS (EC2, S3, Lambda), reducing hosting costs by 30% while improving uptime to 99.9%',
+        'docker': 'Containerized 12 microservices using Docker, cutting deployment time from 4 hours to 20 minutes',
+        'kubernetes': 'Managed Kubernetes clusters serving 50K+ daily active users, implementing auto-scaling that handled 3x traffic spikes',
+        'react': 'Built a React-based customer dashboard with real-time data visualization, increasing user engagement by 40%',
+        'javascript': 'Developed JavaScript front-end features for an e-commerce platform, improving page load speed by 45%',
+        'machine learning': 'Implemented machine learning models for demand forecasting, improving prediction accuracy from 72% to 91%',
+        'excel': 'Created advanced Excel models with VBA automation for financial planning, reducing quarterly close time by 3 days',
+        'tableau': 'Designed Tableau dashboards for C-suite reporting, consolidating 6 manual reports into a single real-time view',
+        'power bi': 'Built Power BI dashboards tracking operational KPIs, enabling data-driven decisions that saved $500K annually',
+        'supply chain': 'Optimized supply chain logistics across 4 distribution centers, reducing lead times by 22% and inventory costs by $1.2M',
+        'budgeting': 'Managed a $10M annual budget with monthly variance reporting, maintaining spend within 2% of plan',
+        'risk management': 'Established risk management framework that identified and mitigated 15 project risks, preventing $800K in potential losses',
+        'compliance': 'Led compliance audit preparation across 3 regulatory frameworks (SOX, GDPR, HIPAA), achieving zero findings',
+        'automation': 'Designed and deployed automation workflows that eliminated 200+ hours/month of manual data entry',
+        'forecasting': 'Developed forecasting models for revenue planning, achieving 95% accuracy within quarterly targets',
+        'cross-functional': 'Drove cross-functional alignment across Engineering, Design, and Marketing for a product launch, hitting all milestone dates',
+        'go to market': 'Defined and executed go-to-market strategy for a new product line, achieving $2M in first-year revenue',
+        'change management': 'Led change management for an enterprise-wide system migration affecting 500+ users, achieving 90% adoption in 60 days',
+        'process improvement': 'Identified and implemented process improvements using Lean methodology, reducing order fulfillment time by 35%',
+        'vendor management': 'Managed vendor relationships with 12 suppliers, negotiating contracts that saved $1.5M over 3 years',
+        'cost optimization': 'Led cost optimization initiative across operations, identifying $3M in annual savings through process redesign',
+        'six sigma': 'Applied Six Sigma DMAIC methodology to reduce manufacturing defect rate from 4.2% to 0.8%',
+        'okr': 'Implemented OKR framework across a 50-person org, improving goal alignment and achieving 85% key result completion',
+        'kpi': 'Defined and tracked KPIs across 4 business units, creating executive dashboards that drove data-informed decision making',
+        'jira': 'Configured Jira workflows and automated reporting for 3 agile teams, improving sprint planning accuracy by 30%',
+        'git': 'Established Git branching strategy and code review process for a team of 15 engineers, reducing production incidents by 60%',
+        'sales': 'Exceeded quarterly sales targets by 120%, managing a pipeline of 40+ enterprise accounts worth $8M',
+        'marketing': 'Planned and executed marketing campaigns across 4 channels, generating 2,500 qualified leads per quarter',
+        'operations': 'Streamlined operations workflows across 3 regions, improving efficiency by 28% and reducing overhead by $400K',
+        'strategy': 'Developed 3-year strategic plan that guided the team through market expansion into 2 new verticals',
+        'typescript': 'Migrated a 50K-line JavaScript codebase to TypeScript, reducing production bugs by 40%',
+        'azure': 'Deployed microservices on Azure with CI/CD pipelines, achieving 99.95% uptime for production services',
+        'mongodb': 'Designed MongoDB schema for a high-throughput application handling 10K+ writes/second',
+        'postgresql': 'Optimized PostgreSQL queries and indexes, reducing average API response time from 800ms to 120ms',
+        'graphql': 'Built a GraphQL API layer that unified 5 backend services, reducing frontend API calls by 60%',
+        'terraform': 'Managed infrastructure as code with Terraform across 3 AWS environments, enabling repeatable deployments',
+        'analytics': 'Built analytics pipeline processing 2M+ daily events, enabling real-time product insights',
+        'business intelligence': 'Stood up a business intelligence practice, delivering 20+ dashboards that drove $5M in identified savings'
+    };
+
+    function getBulletExample(skill) {
+        const key = skill.toLowerCase();
+        if (bulletExamples[key]) return bulletExamples[key];
+        return `[Action verb] + ${skill} + [measurable impact] — e.g., "Leveraged ${skill} to improve [process/metric] by [X]%, resulting in [business outcome]"`;
+    }
+
+    function showWhy(job) {
+        const d = job.scoreDetails;
+        let bridgeHtml = '';
+        if (d.missingMustHaves.length > 0) {
+            bridgeHtml = d.missingMustHaves.map(s => `
+                <div class="bridge-item bridge-gap">
+                    <strong style="display:block;margin-bottom:6px;">Gap: ${esc(s)}</strong>
+                    <p style="margin:0 0 8px;">This role requires <strong>${esc(s)}</strong>. If you have this experience, add a specific bullet to your resume that demonstrates it with measurable results.</p>
+                    <p style="margin:0;padding:8px 12px;background:rgba(0,0,0,0.04);border-radius:6px;font-size:0.85rem;line-height:1.5;">
+                        <em>Example bullet:</em> "${esc(getBulletExample(s))}"
+                    </p>
+                </div>
+            `).join('');
+        }
+        if (d.matchedSkills.length > 0) {
+            const topMatched = d.matchedSkills.slice(0, 4);
+            bridgeHtml += `
+                <div class="bridge-item bridge-ok">
+                    <strong style="display:block;margin-bottom:6px;">Your strengths for this role</strong>
+                    <p style="margin:0 0 8px;">You already have <strong>${topMatched.join(', ')}</strong> — make sure these are prominently featured in your resume summary and relevant experience bullets.</p>
+                    <p style="margin:0;padding:8px 12px;background:rgba(0,0,0,0.04);border-radius:6px;font-size:0.85rem;line-height:1.5;">
+                        <em>Example bullet for ${esc(topMatched[0])}:</em> "${esc(getBulletExample(topMatched[0]))}"
+                    </p>
+                </div>`;
+        }
+
+        let proTip = '';
+        const role = (userProfile?.recentTitle || '').toLowerCase();
+        if (role.includes('program manager') || role.includes('project manager')) {
+            proTip = 'Pro tip: Program/Project Manager resumes should lead with scope (budget, team size, # of workstreams) and close with measurable outcomes (% improvement, $ saved, days reduced).';
+        } else if (role.includes('software engineer') || role.includes('developer')) {
+            proTip = 'Pro tip: Engineering resumes should highlight technical decisions you made, the scale you operated at (users, requests/sec, data volume), and business impact of your work.';
+        } else if (role.includes('data')) {
+            proTip = 'Pro tip: Data role resumes should emphasize the insights you surfaced, the decisions your analysis informed, and the tools/languages you used to get there.';
+        } else if (role.includes('product manager')) {
+            proTip = 'Pro tip: Product Manager resumes should focus on user problems you identified, how you prioritized solutions, and the metrics that moved as a result.';
+        } else if (role.includes('manager') || role.includes('director')) {
+            proTip = 'Pro tip: Leadership resumes should quantify team size, budget ownership, and strategic outcomes — show that you drove results through others.';
+        } else {
+            proTip = 'Pro tip: Strong resume bullets follow the formula: [Action verb] + [What you did] + [Scale/scope] + [Measurable result]. Always quantify where possible.';
+        }
+
+        $('modalBody').innerHTML = `
+            <h3 style="margin-bottom:4px;">${esc(job.title)}</h3>
+            <p style="color:var(--text-muted);margin-bottom:20px;font-size:0.85rem;">${esc(job.company)}</p>
+            <div style="font-size:1.8rem;font-weight:800;color:var(--primary);margin-bottom:20px;">Fit: ${job.fit10}/10</div>
+            <div class="modal-section">
+                <h4>How we scored it</h4>
+                <p>
+                    Title alignment: <strong>${d.titleScore}/35</strong><br>
+                    Skill overlap: <strong>${d.skillScore}/35</strong><br>
+                    Requirements match: <strong>${d.reqScore}/20</strong><br>
+                    Seniority match: <strong>${d.seniorityScore}/5</strong>
+                </p>
+            </div>
+            <div class="modal-section">
+                <h4>Requirements Check</h4>
+                <p>
+                    Years required: <strong>${d.reqs.yearsMin || 'Not specified'}</strong> vs your est: <strong>~${userProfile?.yearsGuess || 'N/A'}</strong><br>
+                    Degree: job wants <strong>${d.reqs.degrees.join(', ') || 'Any'}</strong>, you have <strong>${(userProfile?.degrees || []).join(', ') || 'Not detected'}</strong><br>
+                    Skills matched: <strong>${d.matchedSkills.length}</strong> of your profile skills
+                </p>
+            </div>
+            <div class="modal-section">
+                <h4>Bridge the Gap</h4>
+                ${bridgeHtml || '<p style="color:var(--text-muted);">No specific gaps identified. You look like a strong candidate!</p>'}
+            </div>
+            <div class="modal-section" style="background:var(--primary-light);padding:14px 16px;border-radius:8px;">
+                <p style="margin:0;font-size:0.85rem;color:var(--primary-dark);"><strong>💡 ${proTip}</strong></p>
+            </div>
+        `;
+        $('whyModal').classList.add('open');
+    }
+
+    window.closeModal = () => $('whyModal').classList.remove('open');
+    window.addEventListener('click', e => { if (e.target === $('whyModal')) closeModal(); });
+    window.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+    // --- Init ---
+    checkAuth();
+
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/sw.js').catch(err => console.log('SW registration failed:', err));
+    }
+</script>
+</body>
+</html>

@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Job Tracker Pro — Sign In</title>
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#4f46e5">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <link rel="apple-touch-icon" href="/icons/icon-192.svg">
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-light: #e0e7ff;
+            --primary-dark: #3730a3;
+            --bg: #f1f5f9;
+            --card: #ffffff;
+            --text: #1e293b;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --radius: 12px;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+        }
+
+        .split-left {
+            flex: 1;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 60px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .split-left::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at 30% 50%, rgba(255,255,255,0.08) 0%, transparent 50%);
+        }
+
+        .split-left h1 {
+            font-size: 2.8rem;
+            font-weight: 800;
+            margin-bottom: 16px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .split-left p {
+            font-size: 1.15rem;
+            opacity: 0.85;
+            max-width: 500px;
+            position: relative;
+            z-index: 1;
+            line-height: 1.7;
+        }
+
+        .features-list {
+            margin-top: 40px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+
+        .feature-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            background: rgba(255,255,255,0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+
+        .split-right {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 60px;
+        }
+
+        .login-card {
+            max-width: 400px;
+            width: 100%;
+            text-align: center;
+        }
+
+        .login-card h2 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .login-card .subtitle {
+            color: var(--text-muted);
+            font-size: 1rem;
+            margin-bottom: 40px;
+        }
+
+        .login-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            width: 100%;
+            padding: 14px 24px;
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: white;
+            background: var(--primary);
+            border: none;
+            border-radius: var(--radius);
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.2s;
+            box-shadow: 0 4px 14px rgba(79, 70, 229, 0.3);
+        }
+
+        .login-btn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(79, 70, 229, 0.4);
+        }
+
+        .login-btn:active {
+            transform: translateY(0);
+        }
+
+        .login-options {
+            margin-top: 20px;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        .trust-badges {
+            margin-top: 48px;
+            display: flex;
+            gap: 24px;
+            justify-content: center;
+        }
+
+        .trust-badge {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .footer {
+            position: absolute;
+            bottom: 24px;
+            left: 60px;
+            font-size: 0.8rem;
+            opacity: 0.6;
+            z-index: 1;
+        }
+
+        .auth-error {
+            background: #fee2e2;
+            color: #991b1b;
+            padding: 12px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            body { flex-direction: column; }
+            .split-left {
+                padding: 40px 24px;
+                min-height: 40vh;
+            }
+            .split-left h1 { font-size: 2rem; }
+            .features-list { display: none; }
+            .split-right { padding: 40px 24px; }
+            .footer { position: static; margin-top: 24px; text-align: center; }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .animate {
+            animation: fadeIn 0.6s ease-out forwards;
+        }
+
+        .animate-delay-1 { animation-delay: 0.1s; opacity: 0; }
+        .animate-delay-2 { animation-delay: 0.2s; opacity: 0; }
+        .animate-delay-3 { animation-delay: 0.3s; opacity: 0; }
+        .animate-delay-4 { animation-delay: 0.4s; opacity: 0; }
+    </style>
+</head>
+<body>
+    <div class="split-left">
+        <h1 class="animate">Job Tracker Pro</h1>
+        <p class="animate animate-delay-1">Your smart job search companion for the US and India markets. Upload your resume, and we'll match you with the best opportunities.</p>
+
+        <div class="features-list">
+            <div class="feature-item animate animate-delay-2">
+                <div class="feature-icon">📄</div>
+                <span>Upload your resume (PDF/DOCX) for smart matching</span>
+            </div>
+            <div class="feature-item animate animate-delay-2">
+                <div class="feature-icon">🎯</div>
+                <span>AI-powered fit scores show how well you match each role</span>
+            </div>
+            <div class="feature-item animate animate-delay-3">
+                <div class="feature-icon">💡</div>
+                <span>Get coaching on how to bridge skill gaps</span>
+            </div>
+            <div class="feature-item animate animate-delay-3">
+                <div class="feature-icon">💾</div>
+                <span>Save interesting jobs and access them from any device</span>
+            </div>
+            <div class="feature-item animate animate-delay-4">
+                <div class="feature-icon">🌍</div>
+                <span>Search across US and India job markets</span>
+            </div>
+        </div>
+
+        <div class="footer">Job Tracker Pro</div>
+    </div>
+
+    <div class="split-right">
+        <div class="login-card">
+            <h2 class="animate">Welcome</h2>
+            <p class="subtitle animate animate-delay-1">Sign in to start finding your next great role</p>
+
+            <a href="/api/login" class="login-btn animate animate-delay-2">
+                Sign in to get started
+            </a>
+
+            <div class="login-options animate animate-delay-3">
+                Sign in with Google, GitHub, Apple, or email
+            </div>
+
+            <div class="trust-badges animate animate-delay-4">
+                <div class="trust-badge">
+                    <span>🔒</span> Secure login
+                </div>
+                <div class="trust-badge">
+                    <span>⚡</span> Free to use
+                </div>
+                <div class="trust-badge">
+                    <span>🚫</span> No credit card
+                </div>
+            </div>
+        </div>
+    </div>
+<script>
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/sw.js').catch(err => console.log('SW registration failed:', err));
+    }
+    const params = new URLSearchParams(window.location.search);
+    const authError = params.get('auth_error');
+    if (authError) {
+        const errDiv = document.createElement('div');
+        errDiv.className = 'auth-error';
+        errDiv.textContent = 'Sign-in error: ' + authError;
+        document.querySelector('.login-card').prepend(errDiv);
+    }
+</script>
+</body>
+</html>
